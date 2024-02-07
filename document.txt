@@ -1,0 +1,12 @@
+ext_type = [
+    CLASS_NAME,
+    XPATH,
+    TAG_NAME,
+    CSS_SELECTOR,
+    ID,
+    # LINK_TEXT,
+    # NAME,
+]
+
+run uvicorn : 
+    uvicorn main:app --reload
