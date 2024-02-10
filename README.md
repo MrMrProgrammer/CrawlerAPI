@@ -47,9 +47,9 @@ ID
 ```
 
 ```markdown
-LINK_TEXT (#no now !)
+LINK_TEXT ( #no now !)
 ```
 
 ```markdown
-NAME (#no now !)
+NAME ( #no now !)
 ```
