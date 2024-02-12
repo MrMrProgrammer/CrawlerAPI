@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.options import Options
 import csv
 import string    
 import random
+import re
 
 #endregion
 
@@ -27,7 +28,28 @@ def create_driver():
     return driver
 
 
-def find_data(driver, ext_type, ext_value, multi, file):
+def find_text_data(driver, ext_type, ext_value, multi):
+
+    if ext_type == "REGEX":
+
+        source = driver.page_source
+
+        pattern = r'{}'.format(ext_value)
+
+        matches = re.findall(pattern, source, re.IGNORECASE)
+
+        if multi == "True":
+
+            return matches
+        
+        elif multi == "False":
+
+            if len(matches) > 0:
+                return matches[0]
+
+            return matches
+
+    # ===================================================================================================================
 
     if ext_type == "CLASS_NAME":
 
@@ -37,23 +59,16 @@ def find_data(driver, ext_type, ext_value, multi, file):
 
             for item in driver.find_elements(By.CLASS_NAME, ext_value):
 
-                if file == "False":
-                    list.append(item.text)
+                list.append(item.text)
                 
-                if file == "True":
-                    list = "این برای بررسی فایل ها است."
 
             return list
 
         elif multi == "False":
 
-            if file == "False":
-                if len(driver.find_elements(By.CLASS_NAME, ext_value)) > 0:
-                    return driver.find_elements(By.CLASS_NAME, ext_value)[0].text
+            if len(driver.find_elements(By.CLASS_NAME, ext_value)) > 0:
+                return driver.find_elements(By.CLASS_NAME, ext_value)[0].text
                 
-            elif file == "True":
-                list = "این برای بررسی فایل ها است."
-                return list
 
     # ===================================================================================================================
 
@@ -65,23 +80,15 @@ def find_data(driver, ext_type, ext_value, multi, file):
 
             for item in driver.find_elements(By.XPATH, ext_value):
 
-                if file == "False":
-                    list.append(item.text)
-                
-                if file == "True":
-                    list = "این برای بررسی فایل ها است."
+                list.append(item.text)
+
 
             return list
 
         elif multi == "False":
 
-            if file == "False":
-                if len(driver.find_elements(By.XPATH, ext_value)) > 0:
-                    return driver.find_elements(By.XPATH, ext_value)[0].text
-                
-            elif file == "True":
-                list = "این برای بررسی فایل ها است."
-                return list
+            if len(driver.find_elements(By.XPATH, ext_value)) > 0:
+                return driver.find_elements(By.XPATH, ext_value)[0].text
     
     # ===================================================================================================================
 
@@ -205,21 +212,26 @@ def crawl(body: dict):
 
         for field in fields:
             
-            def_response = find_data(driver,
-                                     field["ext_type"],
-                                     field["ext_value"],
-                                     field["multi"],
-                                     field["file"]
-                                    )
+            if field["file"] == "False":
+
+                def_response = find_text_data(driver,
+                                        field["ext_type"],
+                                        field["ext_value"],
+                                        field["multi"],
+                                        )
+                
+                name = field["name"]
+
+                field_response = {
+                    "name" : name,
+                    "content" : def_response
+                }
+
+                field_response_list.append(field_response)
             
-            name = field["name"]
-
-            field_response = {
-                "name" : name,
-                "content" : def_response
-            }
-
-            field_response_list.append(field_response)
+            else:
+                #TODO
+                pass
             
         response : dict = {
             "url" : url,
