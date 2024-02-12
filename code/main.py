@@ -22,7 +22,8 @@ def create_driver():
     chrome_options = Options()
     chrome_options.add_argument('--headless')
 
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    # , options=chrome_options
     driver.maximize_window()
 
     return driver
@@ -71,7 +72,6 @@ def find_text_data(driver, ext_type, ext_value, multi):
             
             return list
                 
-
     # ===================================================================================================================
 
     if ext_type == "XPATH":
@@ -179,11 +179,11 @@ def find_text_data(driver, ext_type, ext_value, multi):
     # ===================================================================================================================
 
 
-def save_csv(data):
+def save_csv(data, url):
 
     random_string = ''.join(random.choices(string.ascii_letters + string.digits, k = 30))
 
-    file_name = "outputs/" + random_string + ".csv"
+    file_name = "../outputs/" + random_string + ".csv"
 
     with open(file_name, "a", newline="") as csvfile:
 
@@ -193,14 +193,13 @@ def save_csv(data):
 
             contents = field["content"]
 
-            print(type(contents))
-
             for content in contents:
 
                 row_data = []
 
                 row_data.append(field_name)
                 row_data.append(content)
+                row_data.append(url)
 
                 movies = csv.writer(csvfile)
                 movies.writerow(row_data)
@@ -247,7 +246,7 @@ def crawl(body: dict):
                 #TODO
                 pass
 
-        path = save_csv(field_response_list)
+        path = save_csv(field_response_list, url)
             
         response : dict = {
             "url" : url,
