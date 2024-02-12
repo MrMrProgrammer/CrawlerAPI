@@ -53,42 +53,48 @@ def find_text_data(driver, ext_type, ext_value, multi):
 
     if ext_type == "CLASS_NAME":
 
-        if multi == "True":
+        list = []
 
-            list = []
+        if multi == "True":
 
             for item in driver.find_elements(By.CLASS_NAME, ext_value):
 
                 list.append(item.text)
                 
-
             return list
 
         elif multi == "False":
 
             if len(driver.find_elements(By.CLASS_NAME, ext_value)) > 0:
-                return driver.find_elements(By.CLASS_NAME, ext_value)[0].text
+                list.append(driver.find_elements(By.CLASS_NAME, ext_value)[0].text)
+                return list
+            
+            return list
                 
 
     # ===================================================================================================================
 
     if ext_type == "XPATH":
 
-        if multi == "True":
+        list = []
 
-            list = []
+        if multi == "True":
 
             for item in driver.find_elements(By.XPATH, ext_value):
 
                 list.append(item.text)
-
 
             return list
 
         elif multi == "False":
 
             if len(driver.find_elements(By.XPATH, ext_value)) > 0:
-                return driver.find_elements(By.XPATH, ext_value)[0].text
+
+                list.append(driver.find_elements(By.XPATH, ext_value)[0].text)
+
+                return list
+            
+            return list
     
     # ===================================================================================================================
 
@@ -173,25 +179,33 @@ def find_text_data(driver, ext_type, ext_value, multi):
     # ===================================================================================================================
 
 
-# def create_csv(data):
-    
-#     filename = 'outputs/output'.join(random.choices(string.ascii_letters + string.digits, k = 10))
+def save_csv(data):
 
-#     for url in data:
-        
-#         with open (filename, "a", newline = "") as csvfile:
+    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k = 30))
 
-#             for i in url :
-#                 row_data = []
+    file_name = "outputs/" + random_string + ".csv"
 
-#                 pass
+    with open(file_name, "a", newline="") as csvfile:
 
-#             movies = csv.writer(csvfile)
-#             test_list1.append(data)
-#             movies.writerow(data)
-#             test_list1.clear()
-            
-#         csvfile.close()
+        for field in data:
+
+            field_name = field["name"]
+
+            contents = field["content"]
+
+            print(type(contents))
+
+            for content in contents:
+
+                row_data = []
+
+                row_data.append(field_name)
+                row_data.append(content)
+
+                movies = csv.writer(csvfile)
+                movies.writerow(row_data)
+
+    return file_name
 
 
 @app.post("/crawlin")
@@ -232,9 +246,12 @@ def crawl(body: dict):
             else:
                 #TODO
                 pass
+
+        path = save_csv(field_response_list)
             
         response : dict = {
             "url" : url,
+            "file_path" : path,
             "response" : field_response_list
         }
 
