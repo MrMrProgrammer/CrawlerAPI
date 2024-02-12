@@ -53,42 +53,48 @@ def find_text_data(driver, ext_type, ext_value, multi):
 
     if ext_type == "CLASS_NAME":
 
-        if multi == "True":
+        list = []
 
-            list = []
+        if multi == "True":
 
             for item in driver.find_elements(By.CLASS_NAME, ext_value):
 
                 list.append(item.text)
                 
-
             return list
 
         elif multi == "False":
 
             if len(driver.find_elements(By.CLASS_NAME, ext_value)) > 0:
-                return driver.find_elements(By.CLASS_NAME, ext_value)[0].text
+                list.append(driver.find_elements(By.CLASS_NAME, ext_value)[0].text)
+                return list
+            
+            return list
                 
 
     # ===================================================================================================================
 
     if ext_type == "XPATH":
 
-        if multi == "True":
+        list = []
 
-            list = []
+        if multi == "True":
 
             for item in driver.find_elements(By.XPATH, ext_value):
 
                 list.append(item.text)
-
 
             return list
 
         elif multi == "False":
 
             if len(driver.find_elements(By.XPATH, ext_value)) > 0:
-                return driver.find_elements(By.XPATH, ext_value)[0].text
+
+                list.append(driver.find_elements(By.XPATH, ext_value)[0].text)
+
+                return list
+            
+            return list
     
     # ===================================================================================================================
 
