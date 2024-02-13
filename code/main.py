@@ -11,8 +11,20 @@ import csv
 import string    
 import random
 import re
+import requests
 
 #endregion
+
+
+EXTTYPE = {
+    "CLASS_NAME" : By.CLASS_NAME,
+    "XPATH" : By.XPATH,
+    "TAG_NAME" : By.TAG_NAME,
+    "CSS_SELECTOR" : By.CSS_SELECTOR,
+    "ID" : By.ID,
+    "LINK_TEXT" : By.LINK_TEXT,
+    "NAME" : By.NAME,
+}
 
 
 app = FastAPI()
@@ -29,7 +41,7 @@ def create_driver():
     return driver
 
 
-def find_text_data(driver, ext_type, ext_value, multi):
+def find_text_data(driver, file, ext_type, ext_value, multi):
 
     if ext_type == "REGEX":
 
@@ -51,139 +63,78 @@ def find_text_data(driver, ext_type, ext_value, multi):
             return matches
 
     # ===================================================================================================================
-
-    if ext_type == "CLASS_NAME":
-
-        list = []
-
-        if multi == "True":
-
-            for item in driver.find_elements(By.CLASS_NAME, ext_value):
-
-                list.append(item.text)
-                
-            return list
-
-        elif multi == "False":
-
-            if len(driver.find_elements(By.CLASS_NAME, ext_value)) > 0:
-                list.append(driver.find_elements(By.CLASS_NAME, ext_value)[0].text)
-                return list
-            
-            return list
-                
-    # ===================================================================================================================
-
-    if ext_type == "XPATH":
-
-        list = []
-
-        if multi == "True":
-
-            for item in driver.find_elements(By.XPATH, ext_value):
-
-                list.append(item.text)
-
-            return list
-
-        elif multi == "False":
-
-            if len(driver.find_elements(By.XPATH, ext_value)) > 0:
-
-                list.append(driver.find_elements(By.XPATH, ext_value)[0].text)
-
-                return list
-            
-            return list
     
-    # ===================================================================================================================
+    list = []
 
-    if ext_type == "TAG_NAME":
+    if file == "False":
 
         if multi == "True":
 
-            list = []
+            for item in driver.find_elements(EXTTYPE[ext_type], ext_value):
 
-            for item in driver.find_elements(By.TAG_NAME, ext_value):
                 list.append(item.text)
 
             return list
 
-        if multi == "False":
-            return driver.find_elements(By.TAG_NAME, ext_value)[0].text
+        elif multi == "False":
 
-    # ===================================================================================================================
+            if len(driver.find_elements(EXTTYPE[ext_type], ext_value)) > 0:
 
-    if ext_type == "CSS_SELECTOR":
+                list.append(driver.find_elements(EXTTYPE[ext_type], ext_value)[0].text)
 
-        if multi == "True":
-
-            list = []
-
-            for item in driver.find_elements(By.CSS_SELECTOR, ext_value):
-                list.append(item.text)
-
+                return list
+            
             return list
-
-        if multi == "False":
-            return driver.find_elements(By.CSS_SELECTOR, ext_value)[1].text
-
-    # ===================================================================================================================
         
-    if ext_type == "ID":
+    elif file == "True":
 
         if multi == "True":
 
-            list = []
+            for item in driver.find_elements(EXTTYPE[ext_type], ext_value):
 
-            for item in driver.find_elements(By.ID, ext_value):
-                list.append(item.text)
+                item_href = item.get_attribute('href')
+                item_src = item.get_attribute('src')
+
+                if item_href != None:
+                    output = item_href
+                
+                elif item_src != None:
+                    output = item_src
+                
+                else:
+                    output = None
+
+                downloaded_file = download_file(output)
+
+                list.append(downloaded_file)
+
             return list
 
-        if multi == "False":
-            if len(driver.find_elements(By.ID, ext_value)) > 0:
-                return driver.find_elements(By.ID, ext_value)[0].text
+        elif multi == "False":
 
-    # ===================================================================================================================
+            item = driver.find_elements(EXTTYPE[ext_type], ext_value)
 
-    if ext_type == "LINK_TEXT":
+            if len(item) > 0:
 
-        if multi == "True":
+                item_href = item[0].get_attribute('href')
+                item_src = item[0].get_attribute('src')
 
-            list = []
+                if item_href != None:
+                    output = item_href
+                
+                elif item_src != None:
+                    output = item_src
 
-            for item in driver.find_elements(By.LINK_TEXT, ext_value):
-                list.append(item.text)
+                return download_file(output)
+            
             return list
-
-        if multi == "False":
-            if len(driver.find_elements(By.ID, ext_value)) > 0:
-                return driver.find_elements(By.LINK_TEXT, ext_value)[0].text
-
-    # ===================================================================================================================
-
-    if ext_type == "NAME":
-
-        if multi == "True":
-
-            list = []
-
-            for item in driver.find_elements(By.NAME, ext_value):
-                list.append(item.text)
-            return list
-
-        if multi == "False":
-            if len(driver.find_elements(By.ID, ext_value)) > 0:
-                return driver.find_elements(By.NAME, ext_value)[0].text
-
-    # ===================================================================================================================
 
 
 def save_csv(data, url):
 
     random_string = ''.join(random.choices(string.ascii_letters + string.digits, k = 30))
 
-    file_name = "../outputs/" + random_string + ".csv"
+    file_name = "../outputs/csv/" + random_string + ".csv"
 
     with open(file_name, "a", newline="") as csvfile:
 
@@ -192,6 +143,9 @@ def save_csv(data, url):
             field_name = field["name"]
 
             contents = field["content"]
+
+            if contents == None :
+                return None
 
             for content in contents:
 
@@ -203,6 +157,30 @@ def save_csv(data, url):
 
                 movies = csv.writer(csvfile)
                 movies.writerow(row_data)
+
+    return file_name
+
+
+def download_file(url):
+    
+    response = requests.get(url)
+
+    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k = 30))
+
+    format = url.split('.')[-1]
+
+    file_name = "../outputs/file/" + random_string + "." + format
+    
+    if response.status_code == 200:
+        
+        with open(file_name, 'wb') as f:
+
+            f.write(response.content)
+
+        print("فایل با موفقیت دانلود شد!")
+
+    else:
+        print("خطا در دانلود فایل:", response.status_code)
 
     return file_name
 
@@ -224,27 +202,22 @@ def crawl(body: dict):
         field_response_list = []
 
         for field in fields:
+
+            def_response = find_text_data(driver,
+                                    field["file"],
+                                    field["ext_type"],
+                                    field["ext_value"],
+                                    field["multi"],
+                                    )
             
-            if field["file"] == "False":
+            name = field["name"]
 
-                def_response = find_text_data(driver,
-                                        field["ext_type"],
-                                        field["ext_value"],
-                                        field["multi"],
-                                        )
-                
-                name = field["name"]
+            field_response = {
+                "name" : name,
+                "content" : def_response
+            }
 
-                field_response = {
-                    "name" : name,
-                    "content" : def_response
-                }
-
-                field_response_list.append(field_response)
-            
-            else:
-                #TODO
-                pass
+            field_response_list.append(field_response)
 
         path = save_csv(field_response_list, url)
             
@@ -259,15 +232,3 @@ def crawl(body: dict):
         # create_csv(api_response_list)
 
     return api_response_list
-
-
-
-
-
-
-
-
-
-
-
-
