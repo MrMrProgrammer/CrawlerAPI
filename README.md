@@ -53,3 +53,8 @@ LINK_TEXT ( #no now !)
 ```markdown
 NAME ( #no now !)
 ```
+
+----
+```markdown
+get_attribute()
+```
