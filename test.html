@@ -1,16 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Submit Form with Checkbox Validation</title>
+
 </head>
 <body>
 
-    <a class="ok" href="https://arxiv.org/pdf/2402.07896.pdf">link1</a>
-    <a class="ok" href="https://arxiv.org/pdf/2402.07877.pdf">link1</a>
-    <a class="ok" href="https://arxiv.org/pdf/2402.07862.pdf">link1</a>
-    <a class="ok" href="https://arxiv.org/pdf/2402.07792.pdf">link1</a>
+<form id="myForm" action="submit.php" method="post">
+  <label for="username">Username:</label><br>
+  <input type="text" id="username" name="username"><br>
+  <label for="password">Password:</label><br>
+  <input type="password" id="password" name="password"><br><br>
+  <input type="checkbox" id="agree" name="agree">
+  <label for="agree">I agree to the terms and conditions</label><br><br>
+  <button type="button" onclick="validateForm()">Submit</button>
+</form>
+
+<script>
+function validateForm() {
+    var checkBox = document.getElementById("agree");
+
+    if (checkBox.checked == true)
+    {
+        document.getElementById("myForm").submit(); // ارسال فرم
+    }
+    
+    else
+    {
+        console.log("error");
+        checkBox.style.outline = "1px solid red";
+    }
+    }
+</script>
 
 </body>
 </html>
