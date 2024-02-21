@@ -41,7 +41,7 @@ def create_driver():
     return driver
 
 
-def find_text_data(driver, file, ext_type, ext_value, multi):
+def find_text_data(driver, file, ext_type, ext_value, multi, text, inner_fields):
 
     if ext_type == "REGEX":
 
@@ -72,19 +72,32 @@ def find_text_data(driver, file, ext_type, ext_value, multi):
 
             for item in driver.find_elements(EXTTYPE[ext_type], ext_value):
 
-                list.append(item.text)
+                if text == "True":
+                    list.append(item.text)
+                
+                elif text == "False":
+                    list.append(str(item))
 
             return list
 
         elif multi == "False":
 
-            if len(driver.find_elements(EXTTYPE[ext_type], ext_value)) > 0:
+            elements = driver.find_elements(EXTTYPE[ext_type], ext_value)
 
-                list.append(driver.find_elements(EXTTYPE[ext_type], ext_value)[0].text)
+            if len(elements) > 0:
+                element = elements[0]
 
+                if text == "True":
+                    list.append(element.text)
+                    return list
+                
+                elif text == "False":
+                    list.append(element)
+                    return list
+
+            else:
                 return list
-            
-            return list
+
         
     elif file == "True":
 
@@ -130,7 +143,7 @@ def find_text_data(driver, file, ext_type, ext_value, multi):
             return list
 
 
-def save_csv(data, url):
+def save_csv(data):
 
     random_string = ''.join(random.choices(string.ascii_letters + string.digits, k = 30))
 
@@ -153,7 +166,6 @@ def save_csv(data, url):
 
                 row_data.append(field_name)
                 row_data.append(content)
-                row_data.append(url)
 
                 movies = csv.writer(csvfile)
                 movies.writerow(row_data)
@@ -208,6 +220,8 @@ def crawl(body: dict):
                                     field["ext_type"],
                                     field["ext_value"],
                                     field["multi"],
+                                    field["text"],
+                                    field["inner_fields"],
                                     )
             
             name = field["name"]
@@ -219,7 +233,7 @@ def crawl(body: dict):
 
             field_response_list.append(field_response)
 
-        path = save_csv(field_response_list, url)
+        path = save_csv(field_response_list)
             
         response : dict = {
             "url" : url,
@@ -228,7 +242,5 @@ def crawl(body: dict):
         }
 
         api_response_list.append(response)
-
-        # create_csv(api_response_list)
 
     return api_response_list
