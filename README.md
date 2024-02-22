@@ -2,7 +2,7 @@
 ```markdown
 uvicorn main:app --reload
 ```
-
+---
 ### Body Structure :
 ```markdown
 {
@@ -24,7 +24,7 @@ uvicorn main:app --reload
         }]
 }
 ```
-
+---
 ### ext_type :
 ```markdown
 CLASS_NAME
