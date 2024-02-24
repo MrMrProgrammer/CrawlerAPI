@@ -26,6 +26,10 @@ EXTTYPE = {
     "NAME" : By.NAME,
 }
 
+OBJTYPE = {
+    "TEXT" : "text",
+}
+
 
 app = FastAPI()
 
@@ -41,7 +45,7 @@ def create_driver():
     return driver
 
 
-def find_text_data(driver, file, ext_type, ext_value, multi, text, inner_fields):
+def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
 
     if ext_type == "REGEX":
 
@@ -70,13 +74,31 @@ def find_text_data(driver, file, ext_type, ext_value, multi, text, inner_fields)
 
         if multi == "True":
 
-            for item in driver.find_elements(EXTTYPE[ext_type], ext_value):
+            elements = driver.find_elements(EXTTYPE[ext_type], ext_value)
 
-                if text == "True":
-                    list.append(item.text)
-                
-                elif text == "False":
-                    list.append(str(item))
+            if obj_type == "object":
+
+                def_response = find_data(driver,
+                                         inner_fields["file"],
+                                         inner_fields["ext_type"],
+                                         inner_fields["ext_value"],
+                                         inner_fields["multi"],
+                                         inner_fields["obj_type"],
+                                         inner_fields["inner_fields"],
+                                        )
+                return def_response
+
+            for element in elements:
+
+                if obj_type == "text":
+                    list.append(element.text)
+
+                elif obj_type == "object":
+                    list.append(str(element))
+                    # TODO
+
+                else:
+                    list.append(element.get_attribute(obj_type))
 
             return list
 
@@ -84,16 +106,29 @@ def find_text_data(driver, file, ext_type, ext_value, multi, text, inner_fields)
 
             elements = driver.find_elements(EXTTYPE[ext_type], ext_value)
 
+            if obj_type == "object":
+
+                def_response = find_data(driver,
+                                         inner_fields["file"],
+                                         inner_fields["ext_type"],
+                                         inner_fields["ext_value"],
+                                         inner_fields["multi"],
+                                         inner_fields["obj_type"],
+                                         inner_fields["inner_fields"],
+                                        )
+                return def_response
+
             if len(elements) > 0:
                 element = elements[0]
 
-                if text == "True":
+                if obj_type == "text":
                     list.append(element.text)
                     return list
                 
-                elif text == "False":
-                    list.append(element)
-                    return list
+                else:
+                    list.append(element.get_attribute(obj_type))
+
+                return list
 
             else:
                 return list
@@ -215,14 +250,14 @@ def crawl(body: dict):
 
         for field in fields:
 
-            def_response = find_text_data(driver,
-                                    field["file"],
-                                    field["ext_type"],
-                                    field["ext_value"],
-                                    field["multi"],
-                                    field["text"],
-                                    field["inner_fields"],
-                                    )
+            def_response = find_data( driver,
+                                           field["file"],
+                                           field["ext_type"],
+                                           field["ext_value"],
+                                           field["multi"],
+                                           field["obj_type"],
+                                           field["inner_fields"],
+                                        )
             
             name = field["name"]
 
@@ -233,11 +268,11 @@ def crawl(body: dict):
 
             field_response_list.append(field_response)
 
-        path = save_csv(field_response_list)
+        # path = save_csv(field_response_list)
             
         response : dict = {
             "url" : url,
-            "file_path" : path,
+            # "file_path" : path,
             "response" : field_response_list
         }
 
