@@ -5,13 +5,13 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
-from time import sleep
 from selenium.webdriver.chrome.options import Options
 import csv
 import string    
 import random
 import re
 import requests
+
 
 #endregion
 
@@ -26,10 +26,6 @@ EXTTYPE = {
     "NAME" : By.NAME,
 }
 
-OBJTYPE = {
-    "TEXT" : "text",
-}
-
 
 app = FastAPI()
 
@@ -38,8 +34,7 @@ def create_driver():
     chrome_options = Options()
     chrome_options.add_argument('--headless')
 
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
-    # , options=chrome_options
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
     driver.maximize_window()
 
     return driver
@@ -76,27 +71,27 @@ def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
 
             elements = driver.find_elements(EXTTYPE[ext_type], ext_value)
 
-            if obj_type == "object":
-
-                def_response = find_data(driver,
-                                         inner_fields["file"],
-                                         inner_fields["ext_type"],
-                                         inner_fields["ext_value"],
-                                         inner_fields["multi"],
-                                         inner_fields["obj_type"],
-                                         inner_fields["inner_fields"],
-                                        )
-                return def_response
-
             for element in elements:
 
                 if obj_type == "text":
                     list.append(element.text)
 
                 elif obj_type == "object":
-                    list.append(str(element))
-                    # TODO
 
+                    if len(inner_fields) > 0:
+
+                        for inner_field in inner_fields:
+                    
+                            def_response = find_data(element,
+                                                     inner_field["file"],
+                                                     inner_field["ext_type"],
+                                                     inner_field["ext_value"],
+                                                     inner_field["multi"],
+                                                     inner_field["obj_type"],
+                                                     inner_field["inner_fields"],
+                                                    )
+                            
+                            list.append(def_response)
                 else:
                     list.append(element.get_attribute(obj_type))
 
@@ -106,18 +101,6 @@ def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
 
             elements = driver.find_elements(EXTTYPE[ext_type], ext_value)
 
-            if obj_type == "object":
-
-                def_response = find_data(driver,
-                                         inner_fields["file"],
-                                         inner_fields["ext_type"],
-                                         inner_fields["ext_value"],
-                                         inner_fields["multi"],
-                                         inner_fields["obj_type"],
-                                         inner_fields["inner_fields"],
-                                        )
-                return def_response
-
             if len(elements) > 0:
                 element = elements[0]
 
@@ -125,6 +108,29 @@ def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
                     list.append(element.text)
                     return list
                 
+
+                elif obj_type == "object":
+
+                    if len(inner_fields) > 0:
+
+                        for inner_field in inner_fields:
+                    
+                            def_response = find_data(element,
+                                                     inner_field["file"],
+                                                     inner_field["ext_type"],
+                                                     inner_field["ext_value"],
+                                                     inner_field["multi"],
+                                                     inner_field["obj_type"],
+                                                     inner_field["inner_fields"],
+                                                    )
+                            
+                            list.append(def_response)
+                            
+                    else:
+                        return []
+                
+                    return def_response
+
                 else:
                     list.append(element.get_attribute(obj_type))
 
