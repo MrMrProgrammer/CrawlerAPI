@@ -34,7 +34,8 @@ def create_driver():
     chrome_options = Options()
     chrome_options.add_argument('--headless')
 
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    # , options=chrome_options
     driver.maximize_window()
 
     return driver
@@ -158,7 +159,7 @@ def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
                 else:
                     output = None
 
-                downloaded_file = download_file(output)
+                downloaded_file = download_file(output, obj_type)
 
                 list.append(downloaded_file)
 
@@ -179,7 +180,7 @@ def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
                 elif item_src != None:
                     output = item_src
 
-                return download_file(output)
+                return download_file(output, obj_type)
             
             return list
 
@@ -214,13 +215,16 @@ def save_csv(data):
     return file_name
 
 
-def download_file(url):
+def download_file(url, obj_type = None):
     
     response = requests.get(url)
 
     random_string = ''.join(random.choices(string.ascii_letters + string.digits, k = 30))
 
     format = url.split('.')[-1]
+
+    if obj_type != None:
+        format = obj_type
 
     file_name = "../outputs/file/" + random_string + "." + format
     
@@ -274,11 +278,11 @@ def crawl(body: dict):
 
             field_response_list.append(field_response)
 
-        # path = save_csv(field_response_list)
+        path = save_csv(field_response_list)
             
         response : dict = {
             "url" : url,
-            # "file_path" : path,
+            "file_path" : path,
             "response" : field_response_list
         }
 
