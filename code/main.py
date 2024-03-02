@@ -130,7 +130,7 @@ def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
                     else:
                         return []
                 
-                    return def_response
+                    # return def_response
 
                 else:
                     list.append(element.get_attribute(obj_type))
