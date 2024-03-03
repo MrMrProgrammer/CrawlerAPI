@@ -11,7 +11,7 @@ import string
 import random
 import re
 import requests
-
+from time import sleep
 
 #endregion
 
@@ -42,6 +42,21 @@ def create_driver():
 
 
 def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
+
+    if obj_type == "test-01" :
+
+            return driver.current_url
+
+
+    if obj_type == "click" :
+
+        btn = driver.find_elements(EXTTYPE[ext_type], ext_value)[0]
+
+        btn.click()
+        sleep(10)
+
+        return "ok"
+
 
     if ext_type == "REGEX":
 
@@ -93,6 +108,7 @@ def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
                                                     )
                             
                             list.append(def_response)
+                
                 else:
                     list.append(element.get_attribute(obj_type))
 
@@ -109,7 +125,6 @@ def find_data(driver, file, ext_type, ext_value, multi, obj_type, inner_fields):
                     list.append(element.text)
                     return list
                 
-
                 elif obj_type == "object":
 
                     if len(inner_fields) > 0:
@@ -255,6 +270,8 @@ def crawl(body: dict):
     for url in urls:
 
         driver.get(url)
+
+        sleep(3)
 
         field_response_list = []
 
