@@ -209,7 +209,7 @@ def find_data(driver, name, action, file, ext_type, ext_value, multi, obj_type, 
         return [response]
 
 
-    elif action == "url":
+    elif action == "current_url":
         response = driver.current_url
         return [response]
     
@@ -220,6 +220,28 @@ def find_data(driver, name, action, file, ext_type, ext_value, multi, obj_type, 
         response = f"The '{obj_type}' value was entered in the desired input."
         return [response]
     
+
+    elif action == "get_url":
+        driver.get(obj_type)
+        response = f"You have entered the '{obj_type}' link"
+        return [response]
+    
+    elif action == "loop":
+        for i in range(int(obj_type)):
+
+            response = find_data(driver,
+                                 name,
+                                 action,
+                                 file,
+                                 ext_type,
+                                 ext_value,
+                                 multi,
+                                 obj_type,
+                                 inner_fields,
+                                )
+            
+            return response
+
 
     else:
         response = "ERROR : The 'action' field value is not valid!"
@@ -321,7 +343,10 @@ def crawl(body: dict):
                 "content" : def_response
             }
 
-            field_response_list.append(field_response)
+            print(field_response)
+
+            if field["action"] == "extract" or field["action"] == "current_url" :
+                field_response_list.append(field_response)
 
         path = save_csv(field_response_list)
             
