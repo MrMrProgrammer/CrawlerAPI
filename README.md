@@ -10,6 +10,8 @@ uvicorn main:app --reload
 click
 ```
 
+---
+
 ### Body Structure :
 
 ```markdown
