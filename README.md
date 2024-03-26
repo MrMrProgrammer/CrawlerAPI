@@ -34,7 +34,7 @@ click
         }]
 }
 ```
-
+---
 ### ext_type :
 ```markdown
 CLASS_NAME
